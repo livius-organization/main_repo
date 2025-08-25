@@ -16,6 +16,7 @@ steps:
     echo "This is the content of the binary file" > myapp.bin
     echo "Build complete."
     echo "Trigger the next Pipeline..."
+    echo "Oh man - this is nice!"
   displayName: 'Build Binaries'
 
 - task: PublishBuildArtifacts@1
