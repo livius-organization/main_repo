@@ -3,7 +3,7 @@ name: Build Master
 on:
   # push:
   #   branches: [ main, feature/* ]
-  # random commit
+  # random commit 2
   pull_request:
   workflow_dispatch:
   
