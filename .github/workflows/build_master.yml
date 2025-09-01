@@ -40,7 +40,29 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: Bearer ${{ secrets.GIT_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
-            -d "{\"state\":\"pending\",\"context\":\"Repo_Slave: slave build\",\"target_url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",\"description\":\"slave build triggered\"}"
+            -d "{
+              \"state\":\"pending\",
+              \"context\":\"Repo Slave: build on (${{ steps.map.outputs.b_branch }})\",
+              \"target_url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
+              \"description\":\"Slave build triggered\"}"
+      
+      - name: Resolve Repo A branch (push or PR)
+        id: br
+        run: |
+          # For pushes, github.ref_name is fine.
+          # For PRs, use github.head_ref (the source branch of the PR).
+          A_BRANCH="${{ github.head_ref || github.ref_name }}"
+          echo "a_branch=$A_BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Map Repo A branch -> Repo B branch
+        id: map
+        run: |
+          case "${{ steps.br.outputs.a_branch }}" in
+            v0)  echo "b_branch=feature/random-slave"  >> "$GITHUB_OUTPUT" ;;
+            v2)  echo "b_branch=feature/test-different-branch-slave"  >> "$GITHUB_OUTPUT" ;;
+            *)   echo "b_branch=main" >> "$GITHUB_OUTPUT" ;;  # default/fallback
+          esac
+
 
       - name: Trigger Repo Slave via repository_dispatch
         uses: peter-evans/repository-dispatch@v3
@@ -53,5 +75,6 @@ jobs:
               "source_repo": "${{ github.repository }}",
               "source_run_id": "${{ github.run_id }}",
               "source_sha": "${{ github.sha }}",
-              "artifact_name": "ca-bundle"
+              "artifact_name": "ca-bundle",
+              "target_branch_b": "${{ steps.map.outputs.b_branch }}"
             }
