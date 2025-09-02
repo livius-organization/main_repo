@@ -1,4 +1,4 @@
-name: Build Master
+name: Build main
 
 on:
   # push:
@@ -10,10 +10,10 @@ on:
 permissions:
   contents: read
   actions: read
-  statuses: write   # to set commit statuses in Repo Master (for the cSlave context)
+  statuses: write   # to set commit statuses in Repo main (for the cSlave context)
 
 jobs:
-  build-master:
+  build-main:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
             -d "{
               \"state\": \"success\",
-              \"context\":\"Repo Master: Main build passed for ${{ github.head_ref || github.ref_name }} \",
+              \"context\":\"Repo Main: Main build passed for ${{ github.head_ref || github.ref_name }} \",
               \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
               \"description\": \"cA build passed\"
             }"
@@ -57,13 +57,13 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
             -d "{
               \"state\": \"failure\",
-              \"context\":\"Repo Master: Main build failed for ${{ github.head_ref || github.ref_name }} \",
+              \"context\":\"Repo Main: Main build failed for ${{ github.head_ref || github.ref_name }} \",
               \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
               \"description\": \"cA build failed\"
             }"
 
   trigger-slave:
-    needs: build-master
+    needs: build-main
     runs-on: ubuntu-latest
     steps:    
       - name: Resolve Repo A branch (push or PR)
@@ -83,7 +83,7 @@ jobs:
             *)   echo "b_branch=main" >> "$GITHUB_OUTPUT" ;;  # default/fallback
           esac
 
-      - name: Mark Slave status as pending on Repo Master commit
+      - name: Mark Slave status as pending on Repo main commit
         run: |
           curl -sS -X POST \
             -H "Accept: application/vnd.github.v3+json" \
