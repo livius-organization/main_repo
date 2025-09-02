@@ -41,7 +41,7 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
             -d "{
               \"state\": \"success\",
-              \"context\":\"Repo Master: Main build passed \",
+              \"context\":\"Repo Master: Main build passed for ${{ github.head_ref || github.ref_name }} \",
               \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
               \"description\": \"cA build passed\"
             }"
@@ -57,7 +57,7 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
             -d "{
               \"state\": \"failure\",
-              \"context\":\"Repo Master: Main build failed \",
+              \"context\":\"Repo Master: Main build failed for ${{ github.head_ref || github.ref_name }} \",
               \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
               \"description\": \"cA build failed\"
             }"
