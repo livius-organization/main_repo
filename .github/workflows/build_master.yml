@@ -10,7 +10,7 @@ on:
 permissions:
   contents: read
   actions: read
-  statuses: write   # to set commit statuses in Repo main (for the cSlave context)
+  statuses: write   # to set commit statuses in Repo main (for the cresource context)
 
 jobs:
   build-main:
@@ -62,7 +62,7 @@ jobs:
               \"description\": \"cA build failed\"
             }"
 
-  trigger-slave:
+  trigger-resource:
     needs: build-main
     runs-on: ubuntu-latest
     steps:    
@@ -78,12 +78,12 @@ jobs:
         id: map
         run: |
           case "${{ steps.br.outputs.a_branch }}" in
-            v0)  echo "b_branch=feature/random-slave"  >> "$GITHUB_OUTPUT" ;;
-            v2)  echo "b_branch=feature/test-different-branch-slave"  >> "$GITHUB_OUTPUT" ;;
+            v0)  echo "b_branch=feature/random-resource"  >> "$GITHUB_OUTPUT" ;;
+            v2)  echo "b_branch=feature/test-different-branch-resource"  >> "$GITHUB_OUTPUT" ;;
             *)   echo "b_branch=main" >> "$GITHUB_OUTPUT" ;;  # default/fallback
           esac
 
-      - name: Mark Slave status as pending on Repo main commit
+      - name: Mark resource status as pending on Repo main commit
         run: |
           curl -sS -X POST \
             -H "Accept: application/vnd.github.v3+json" \
@@ -91,16 +91,16 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
             -d "{
               \"state\":\"pending\",
-              \"context\":\"Repo Slave: build on (${{ steps.map.outputs.b_branch }})\",
+              \"context\":\"Repo resource: build on (${{ steps.map.outputs.b_branch }})\",
               \"target_url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
-              \"description\":\"Slave build triggered\"}"
+              \"description\":\"resource build triggered\"}"
 
-      - name: Trigger Repo Slave via repository_dispatch
+      - name: Trigger Repo resource via repository_dispatch
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GIT_TOKEN }}
-          repository: liviutomoiaga/slave      # <-- change me
-          event-type: build-slave
+          repository: liviutomoiaga/resource_repo      # <-- change me
+          event-type: build-resource
           client-payload: |
             {
               "source_repo": "${{ github.repository }}",
