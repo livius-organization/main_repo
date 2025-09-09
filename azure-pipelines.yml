@@ -4,7 +4,10 @@
 # https://aka.ms/yaml
 # dummy commit
 name: MainPipeline
-trigger: none
+trigger:
+  branches:
+    include:
+    - main
 
 pool:
   vmImage: ubuntu-latest
