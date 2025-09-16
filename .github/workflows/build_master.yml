@@ -27,6 +27,7 @@ jobs:
           path: out/
           
       - name: Map Repo A branch -> Repo B branch
+        shell: bash
         id: map
         run: |
           source_branch=${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
