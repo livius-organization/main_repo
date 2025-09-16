@@ -33,8 +33,8 @@ jobs:
           op: trigger
           status_context: adi-resource-build
           status_state: pending
-          resource_owner: analogdevicesinc
-          resource_repo: resource-repo-name
+          resource_owner: liviutomoiaga
+          resource_repo: resource-repo
           resource_event_type: adi-resource-trigger
           artifact_name: main-bundle
           payload_extra_json: |
