@@ -28,7 +28,7 @@ jobs:
 
       - name: Trigger Resource (and set idle/pending status)
         if: ${{ success() }}
-        uses: liviutomoiaga/shared-actions/cascade-build-reporter@main
+        uses: liviutomoiaga/shared_actions/cascade-build-reporter@main
         with:
           op: trigger
           status_context: adi/resource/build
