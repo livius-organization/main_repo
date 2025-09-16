@@ -31,7 +31,7 @@ jobs:
         uses: liviutomoiaga/shared_action/cascade-build-reporter@main
         with:
           op: trigger
-          status_context: adi/resource/build
+          status_context: adi-resource-build
           status_state: pending
           resource_owner: analogdevicesinc
           resource_repo: resource-repo-name
