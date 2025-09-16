@@ -25,6 +25,17 @@ jobs:
         with:
           name: main-bundle
           path: out/
+          
+      - name: Map Repo A branch -> Repo B branch
+        id: map
+        run: |
+          source_branch=${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+          echo "Source branch is $source_branch"
+          case "$source_branch" in
+            v0)  echo "b_branch=feature/random-slave"  >> "$GITHUB_OUTPUT" ;;
+            v2)  echo "b_branch=feature/test-different-branch-slave"  >> "$GITHUB_OUTPUT" ;;
+            *)   echo "b_branch=main" >> "$GITHUB_OUTPUT" ;;  # default/fallback
+          esac
 
       - name: Trigger Resource (and set idle/pending status)
         if: ${{ success() }}
@@ -37,6 +48,7 @@ jobs:
           resource_repo: resource-repo
           resource_event_type: adi-resource-trigger
           artifact_name: main-bundle
+          resource_repo_branch: ${steps.map.b_branch}
           payload_extra_json: |
             {"branch_mapping":{"main":"main","v0":"v0b","v2":"v2b"}}
           github_token: ${{ secrets.GIT_TOKEN }}
