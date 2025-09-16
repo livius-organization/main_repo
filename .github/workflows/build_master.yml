@@ -1,16 +1,13 @@
-name: Build main
-
+name: CI (Main)
 on:
   push:
-    branches: [ main, feature/* ]
-  # random commit 2
-  pull_request:
-  workflow_dispatch:
-  
+    branches: [ main ]
+#   pull_request:
+
 permissions:
-  contents: read
+  contents: write
+  statuses: write
   actions: read
-  statuses: write   # to set commit statuses in Repo main (for the cresource context)
 
 jobs:
   build-main:
@@ -18,94 +15,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build cA
+      - name: Build
         run: |
-          # your build here
-          mkdir -p dist
-          echo "cA-binary" > dist/ca.bin
+          echo "Build main..."
+          mkdir -p out && echo "hello" > out/thing.txt
 
-      - name: Upload artifact (cA bundle)
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ca-bundle
-          path: dist/
-      
-      - name: Set Main build status to SUCCESS
-        if: success()
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -sS -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GIT_TOKEN  }}" \
-            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
-            -d "{
-              \"state\": \"success\",
-              \"context\":\"Repo Main: Main build passed for ${{ github.head_ref || github.ref_name }} \",
-              \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
-              \"description\": \"cA build passed\"
-            }"
+          name: main-bundle
+          path: out/
 
-      - name: Set Main build status to FAILURE
-        if: failure()
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -sS -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GIT_TOKEN  }}" \
-            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
-            -d "{
-              \"state\": \"failure\",
-              \"context\":\"Repo Main: Main build failed for ${{ github.head_ref || github.ref_name }} \",
-              \"target_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
-              \"description\": \"cA build failed\"
-            }"
-
-  trigger-resource:
-    needs: build-main
-    runs-on: ubuntu-latest
-    steps:    
-      - name: Resolve Repo A branch (push or PR)
-        id: br
-        run: |
-          # For pushes, github.ref_name is fine.
-          # For PRs, use github.head_ref (the source branch of the PR).
-          A_BRANCH="${{ github.head_ref || github.ref_name }}"
-          echo "a_branch=$A_BRANCH" >> "$GITHUB_OUTPUT"
-
-      - name: Map Repo A branch -> Repo B branch
-        id: map
-        run: |
-          case "${{ steps.br.outputs.a_branch }}" in
-            v0)  echo "b_branch=feature/random-resource"  >> "$GITHUB_OUTPUT" ;;
-            v2)  echo "b_branch=feature/test-different-branch-resource"  >> "$GITHUB_OUTPUT" ;;
-            *)   echo "b_branch=main" >> "$GITHUB_OUTPUT" ;;  # default/fallback
-          esac
-
-      - name: Mark resource status as pending on Repo main commit
-        run: |
-          curl -sS -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GIT_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}" \
-            -d "{
-              \"state\":\"pending\",
-              \"context\":\"Repo resource: build on (${{ steps.map.outputs.b_branch }})\",
-              \"target_url\":\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
-              \"description\":\"resource build triggered\"}"
-
-      - name: Trigger Repo resource via repository_dispatch
-        uses: peter-evans/repository-dispatch@v3
+      - name: Trigger Resource (and set idle/pending status)
+        if: ${{ success() }}
+        uses: liviutomoiaga/shared-actions/cascade-build-reporter@main
         with:
-          token: ${{ secrets.GIT_TOKEN }}
-          repository: liviutomoiaga/resource_repo      # <-- change me
-          event-type: build-resource
-          client-payload: |
-            {
-              "source_repo": "${{ github.repository }}",
-              "source_run_id": "${{ github.run_id }}",
-              "source_sha": "${{ github.sha }}",
-              "artifact_name": "ca-bundle",
-              "target_branch_b": "${{ steps.map.outputs.b_branch }}"
-            }
+          op: trigger
+          status_context: adi/resource/build
+          status_state: pending
+          resource_owner: analogdevicesinc
+          resource_repo: resource-repo-name
+          resource_event_type: adi-resource-trigger
+          artifact_name: main-bundle
+          payload_extra_json: |
+            {"branch_mapping":{"main":"main","v0":"v0b","v2":"v2b"}}
+          github_token: ${{ secrets.GIT_TOKEN }}
