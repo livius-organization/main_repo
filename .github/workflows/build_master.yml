@@ -2,8 +2,6 @@ name: CI (Main)
 on:
   push:
     branches: [ main ]
-#   pull_request:
-
 permissions:
   contents: write
   statuses: write
