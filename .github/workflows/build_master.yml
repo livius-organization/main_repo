@@ -49,7 +49,7 @@ jobs:
           resource_repo: resource-repo
           resource_event_type: adi-resource-trigger
           artifact_name: main-bundle
-          resource_repo_branch: ${steps.map.b_branch}
+          resource_repo_branch: ${steps.map.outputs.b_branch}
           payload_extra_json: |
             {"branch_mapping":{"main":"main","v0":"v0b","v2":"v2b"}}
           github_token: ${{ secrets.GIT_TOKEN }}
