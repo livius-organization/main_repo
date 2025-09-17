@@ -46,7 +46,7 @@ jobs:
           status_context: adi-resource-build
           status_state: pending
           resource_owner: liviutomoiaga
-          resource_repo: resource-repo
+          resource_repo: resource_repo
           resource_event_type: adi-resource-trigger
           artifact_name: main-bundle
           resource_repo_branch: ${{ steps.map.outputs.b_branch }}
