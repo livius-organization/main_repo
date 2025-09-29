@@ -54,3 +54,4 @@ jobs:
           artifact_name: main-bundle
           resource_repo_branch: ${{ steps.map.outputs.b_branch }}
           github_token: ${{ secrets.GIT_TOKEN }}
+          runner_os: ${{ runner.os }}
