@@ -22,7 +22,7 @@ jobs:
       - name: Build
         shell: cmd
         run: |
-          echo Build main...
+          echo Build main... on Win machine
           mkdir out
           echo hello > out\thing.txt
 
