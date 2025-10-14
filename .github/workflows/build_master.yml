@@ -20,27 +20,36 @@ jobs:
         run: echo "Running on ${{ runner.os }}"
 
       - name: Build
+        shell: pwsh
         run: |
-          echo "Build main..."
-          mkdir -p out && echo "hello" > out/thing.txt
+          Write-Host "Build main..."
+          New-Item -ItemType Directory -Force -Path out | Out-Null
+          "hello" | Out-File -FilePath out/thing.txt -Encoding utf8
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: main_bundle_${{ matrix.os }}
           path: out/
-          
+
       - name: Map Repo A branch -> Repo B branch
-        shell: bash
+        shell: pwsh
         id: map
         run: |
-          source_branch=${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
-          echo "Source branch is $source_branch"
-          case "$source_branch" in
-            v0)  echo "b_branch=feature/random-slave"  >> "$GITHUB_OUTPUT" ;;
-            v2)  echo "b_branch=feature/test-different-branch-slave"  >> "$GITHUB_OUTPUT" ;;
-            *)   echo "b_branch=main" >> "$GITHUB_OUTPUT" ;;  # default/fallback
-          esac
+          if ("${{ github.event_name }}" -eq "pull_request") {
+            $source_branch = "${{ github.head_ref }}"
+          } else {
+            $source_branch = "${{ github.ref_name }}"
+          }
+
+          Write-Host "Source branch is $source_branch"
+
+          switch ($source_branch) {
+            "v0" { "b_branch=feature/random-slave" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
+            "v2" { "b_branch=feature/test-different-branch-slave" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
+            default { "b_branch=main" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
+          }
+
 
       - name: Trigger Resource (and set idle/pending status)
         if: ${{ success() }}
