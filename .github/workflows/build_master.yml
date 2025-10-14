@@ -20,7 +20,7 @@ jobs:
         run: echo "Running on ${{ runner.os }}"
 
       - name: Build
-        shell: cmd
+        shell: bash
         run: |
           echo Build main... on Win machine
           mkdir out
