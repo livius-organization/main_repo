@@ -20,6 +20,14 @@ jobs:
         run: echo "Running on ${{ runner.os }}"
 
       - name: Build
+        if: ${{ matrix.os == 'livius-win-self-hosted' }}
+        shell: cmd
+        run: |
+          echo Build main... on Win machine
+          mkdir out
+          echo hello > out\thing.txt
+      - name: Build
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         shell: bash
         run: |
           echo Build main... on Win machine
