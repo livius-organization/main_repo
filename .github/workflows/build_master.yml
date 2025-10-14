@@ -20,11 +20,12 @@ jobs:
         run: echo "Running on ${{ runner.os }}"
 
       - name: Build
-        shell: pwsh
+        shell: cmd
         run: |
-          Write-Host "Build main..."
-          New-Item -ItemType Directory -Force -Path out | Out-Null
-          "hello" | Out-File -FilePath out/thing.txt -Encoding utf8
+          echo Build main...
+          mkdir out
+          echo hello > out\thing.txt
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
