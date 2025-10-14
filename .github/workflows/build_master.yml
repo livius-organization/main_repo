@@ -34,22 +34,22 @@ jobs:
           path: out/
 
       - name: Map Repo A branch -> Repo B branch
-        shell: pwsh
+        shell: bash
         id: map
         run: |
-          if ("${{ github.event_name }}" -eq "pull_request") {
-            $source_branch = "${{ github.head_ref }}"
-          } else {
-            $source_branch = "${{ github.ref_name }}"
-          }
-
-          Write-Host "Source branch is $source_branch"
-
-          switch ($source_branch) {
-            "v0" { "b_branch=feature/random-slave" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
-            "v2" { "b_branch=feature/test-different-branch-slave" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
-            default { "b_branch=main" | Out-File -FilePath $env:GITHUB_OUTPUT -Append }
-          }
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            source_branch="${{ github.head_ref }}"
+          else
+            source_branch="${{ github.ref_name }}"
+          fi
+      
+          echo "Source branch is $source_branch"
+      
+          case "$source_branch" in
+            v0) echo "b_branch=feature/random-slave" >> "$GITHUB_OUTPUT" ;;
+            v2) echo "b_branch=feature/test-different-branch-slave" >> "$GITHUB_OUTPUT" ;;
+            *)  echo "b_branch=main" >> "$GITHUB_OUTPUT" ;;
+          esac
 
 
       - name: Trigger Resource (and set idle/pending status)
