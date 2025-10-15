@@ -11,7 +11,7 @@ jobs:
   build-main:
     strategy:
       matrix:
-        os: [livius-win-self-hosted, ubuntu-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -34,43 +34,38 @@ jobs:
           mkdir out
           echo hello > out\thing.txt
 
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: main_bundle_${{ matrix.os }}
           path: out/
 
-      # - name: Map Repo A branch -> Repo B branch
-      #   shell: bash
-      #   id: map
-      #   run: |
-      #     if [ "${{ github.event_name }}" = "pull_request" ]; then
-      #       source_branch="${{ github.head_ref }}"
-      #     else
-      #       source_branch="${{ github.ref_name }}"
-      #     fi
-      
-      #     echo "Source branch is $source_branch"
-      
-      #     case "$source_branch" in
-      #       v0) echo "b_branch=feature/random-slave" >> "$GITHUB_OUTPUT" ;;
-      #       v2) echo "b_branch=feature/test-different-branch-slave" >> "$GITHUB_OUTPUT" ;;
-      #       *)  echo "b_branch=main" >> "$GITHUB_OUTPUT" ;;
-      #     esac
+      - name: Map Repo A branch -> Repo B branch 
+        shell: bash 
+        id: map
+        run: |
+          source_branch=${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }} 
+    
+          echo "Source branch is $source_branch"
+          
+          case "$source_branch" in
+            v0) echo "b_branch=feature/random-slave" >> "$GITHUB_OUTPUT" ;;
+            v2) echo "b_branch=feature/test-different-branch-slave" >> "$GITHUB_OUTPUT" ;;
+            *) echo "b_branch=main" >> "$GITHUB_OUTPUT" ;; # default/fallback
+          esac
 
 
-      - name: Trigger Resource (and set idle/pending status)
+      - name: Trigger Worker (and set idle/pending status)
         if: ${{ success() }}
         uses: liviutomoiaga/shared_action/cascade-build-reporter@main
         with:
           op: trigger
-          status_context: adi-resource-build
+          status_context: adi-worker-build
           status_state: pending
-          resource_owner: liviutomoiaga
-          resource_repo: resource_repo
-          resource_event_type: adi-resource-trigger
+          worker_owner: liviutomoiaga
+          worker_repo: worker_repo
+          worker_event_type: adi-worker-trigger
           artifact_name: main-bundle
-          resource_repo_branch: ${{ steps.map.outputs.b_branch }}
+          worker_repo_branch: ${{ steps.map.outputs.b_branch }}
           github_token: ${{ secrets.GIT_TOKEN }}
           runner_os: ${{ matrix.os }}
