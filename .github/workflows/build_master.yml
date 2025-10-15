@@ -62,8 +62,8 @@ jobs:
           op: trigger
           status_context: adi-worker-build
           status_state: pending
-          worker_owner: liviutomoiaga
-          worker_repo: worker_repo
+          worker_owner: livius-organization
+          worker_repo: respurce_repo
           worker_event_type: adi-worker-trigger
           artifact_name: main-bundle
           worker_repo_branch: ${{ steps.map.outputs.b_branch }}
